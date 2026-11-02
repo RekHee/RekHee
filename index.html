@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>렉희 사용 설명서 | 렉희 왕국</title>
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<div class="page" id="app"><p class="loading">왕국 안내서를 펼치는 중… 👑</p></div>
+<script src="assets/render.js"></script>
+<script>
+  const app = document.getElementById('app');
+  // 캐시를 피해서 항상 최신 content.json 을 불러온다
+  fetch('content.json?t=' + Date.now(), { cache: 'no-store' })
+    .then(r => { if (!r.ok) throw new Error(r.status); return r.json(); })
+    .then(data => RekheeRender.render(app, data))
+    .catch(() => { app.innerHTML = '<p class="loading">내용을 불러오지 못했어요. 잠시 후 새로고침 해주세요.</p>'; });
+</script>
+</body>
+</html>

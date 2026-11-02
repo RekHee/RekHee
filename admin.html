@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>관리자 | 렉희 왕국</title>
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<div class="admin-bar">
+  <div class="admin-bar-inner">
+    <div class="admin-title">🛠️ 관리자 페이지 <span class="dirty" id="dirty">저장됨</span></div>
+    <div class="actions">
+      <button class="btn primary" id="editBtn">✏️ 내용 편집하기</button>
+      <button class="btn" id="saveBtn">💾 변경사항 저장</button>
+      <button class="btn" id="revertBtn">↺ 되돌리기</button>
+      <button class="btn" id="exportBtn" title="content.json 파일로 내려받기 (직접 커밋할 때)">⬇️ JSON</button>
+      <button class="btn" id="printBtn">🖨️</button>
+      <button class="btn" id="settingsBtn" title="GitHub 연결 설정">⚙️</button>
+      <a class="btn" href="./" target="_blank" rel="noopener">👀 사용자 페이지</a>
+    </div>
+  </div>
+</div>
+
+<div class="page">
+  <div class="edit-note">편집 모드예요! 점선으로 표시된 글자를 눌러 직접 수정하세요. 카드 위의 ↑ ↓ ✕ 버튼으로 순서 변경·삭제, ＋ 버튼으로 새 항목을 추가할 수 있어요. ★는 세계관 문장 강조, 🔓/🔒는 해금 상태 전환이에요. 다 고치면 <b>💾 변경사항 저장</b>을 누르면 사용자 페이지에 반영됩니다.</div>
+  <div id="app"><p class="loading">불러오는 중…</p></div>
+</div>
+
+<dialog id="settings">
+  <form method="dialog" id="settingsForm">
+    <h2>⚙️ GitHub 연결 설정</h2>
+    <p class="help">저장 버튼을 누르면 이 저장소의 content.json 이 커밋돼요. 토큰은 이 브라우저에만 보관되고 다른 곳으로 보내지지 않아요.</p>
+    <div class="row">
+      <label>소유자 (owner)<input name="owner" required></label>
+      <label>저장소 (repo)<input name="repo" required></label>
+    </div>
+    <div class="row">
+      <label>브랜치<input name="branch" required></label>
+      <label>파일 경로<input name="path" required></label>
+    </div>
+    <label>GitHub 토큰 (Fine-grained, Contents: Read and write)
+      <input name="token" type="password" autocomplete="off" placeholder="github_pat_...">
+    </label>
+    <p class="help">GitHub → Settings → Developer settings → Fine-grained tokens → 이 저장소만 선택 → Repository permissions의 <b>Contents</b>를 <b>Read and write</b>로.</p>
+    <div class="dlg-actions">
+      <button class="btn" value="cancel" formnovalidate>취소</button>
+      <button class="btn primary" value="ok" id="settingsOk">연결 확인 후 저장</button>
+    </div>
+  </form>
+</dialog>
+
+<div class="toast" id="toast"></div>
+
+<script src="assets/render.js"></script>
+<script src="assets/admin.js"></script>
+</body>
+</html>
