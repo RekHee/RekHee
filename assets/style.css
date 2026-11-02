@@ -65,7 +65,9 @@ button{font:inherit;cursor:pointer}
 .hero [contenteditable="true"]:focus{background:#ffffff22;color:white}
 .secret [contenteditable="true"]:focus{background:#ffffff18;color:white}
 .editable-item{position:relative}
-.item-ctrls{position:absolute;top:-13px;right:12px;display:flex;gap:4px;z-index:3}
+.item-ctrls{position:absolute;top:10px;right:12px;display:flex;gap:4px;z-index:3}
+/* 편집 모드에서는 카드 위쪽에 버튼 줄 자리를 따로 비워 내용(해금 배지 등)과 겹치지 않게 */
+.mini.editable-item,.trait.editable-item,.achievement.editable-item{padding-top:46px}
 .item-ctrls button,.pill-x{border:1px solid var(--line);background:#fff;color:var(--deep);border-radius:8px;min-width:26px;height:26px;font-size:.78rem;padding:0 4px;box-shadow:0 2px 0 #f3c6dd}
 .item-ctrls button:disabled{opacity:.35;cursor:default}
 .item-ctrls button[data-act="del"]:hover,.pill-x:hover{background:#ffe3e3;color:#b3261e}
