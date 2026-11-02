@@ -142,10 +142,10 @@
         "title": "왕의 컴퓨터 업그레이드",
         "meta": "🔒 다음 목표",
         "desc": "고사양 게임도 하고, 게임 중 버츄얼도 켤 수 있는 왕국의 미래!",
-        "condition": "해금 조건: 후궁 400명",
+        "condition": "해금 조건: 후궁수 500",
         "status": "잠김",
         "unlocked": false,
-        "target": 400
+        "target": 500
       }
     ],
     "secret": {
