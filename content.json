@@ -1,5 +1,15 @@
 {
   "brand": "♛ REKHEE KINGDOM · CHARACTER GUIDE",
+  "followers": {
+    "count": 135,
+    "auto": false,
+    "channelId": "",
+    "source": "https://raw.githubusercontent.com/RekHee/RekHee/main/followers.json"
+  },
+  "display": {
+    "showLocked": true,
+    "showSecret": true
+  },
   "hero": {
     "eyebrow": "WELCOME TO",
     "title": "렉희 사용 설명서",
@@ -116,7 +126,8 @@
         "desc": "후궁들이 채팅에서 사용할 수 있는 렉희왕 스티커 제작!",
         "condition": "해금 조건: 후궁 150명",
         "status": "잠김",
-        "unlocked": false
+        "unlocked": false,
+        "target": 150
       },
       {
         "title": "방송 화면 업그레이드",
@@ -124,7 +135,8 @@
         "desc": "더 예쁜 방송 화면과 새로운 연출로 왕국의 품격을 한 단계 업그레이드!",
         "condition": "해금 조건: 후궁 200명",
         "status": "잠김",
-        "unlocked": false
+        "unlocked": false,
+        "target": 200
       },
       {
         "title": "왕의 컴퓨터 업그레이드",
@@ -132,7 +144,8 @@
         "desc": "고사양 게임도 하고, 게임 중 버츄얼도 켤 수 있는 왕국의 미래!",
         "condition": "해금 조건: 후궁 400명",
         "status": "잠김",
-        "unlocked": false
+        "unlocked": false,
+        "target": 400
       }
     ],
     "secret": {

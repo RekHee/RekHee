@@ -4,6 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>렉희 사용 설명서 | 렉희 왕국</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=Noto+Sans+KR:wght@400;500;700&display=swap">
 <link rel="stylesheet" href="assets/style.css">
 </head>
 <body>
@@ -11,11 +14,20 @@
 <script src="assets/render.js"></script>
 <script>
   const app = document.getElementById('app');
-  // 캐시를 피해서 항상 최신 content.json 을 불러온다
-  fetch('content.json?t=' + Date.now(), { cache: 'no-store' })
-    .then(r => { if (!r.ok) throw new Error(r.status); return r.json(); })
-    .then(data => RekheeRender.render(app, data))
-    .catch(() => { app.innerHTML = '<p class="loading">내용을 불러오지 못했어요. 잠시 후 새로고침 해주세요.</p>'; });
+  (async () => {
+    try {
+      // 캐시를 피해서 항상 최신 content.json 을 불러온다
+      const r = await fetch('content.json?t=' + Date.now(), { cache: 'no-store' });
+      if (!r.ok) throw new Error(r.status);
+      const data = await r.json();
+      RekheeRender.render(app, data);
+      // 치지직 자동 모드면 후궁 수를 받아와서 다시 그린다
+      const live = await RekheeRender.loadFollowers(data);
+      if (live) RekheeRender.render(app, data, { live });
+    } catch (e) {
+      app.innerHTML = '<p class="loading">내용을 불러오지 못했어요. 잠시 후 새로고침 해주세요.</p>';
+    }
+  })();
 </script>
 </body>
 </html>

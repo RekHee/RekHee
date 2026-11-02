@@ -6,7 +6,7 @@
 
   const $ = id => document.getElementById(id);
   const app = $('app');
-  const { render, getPath } = window.RekheeRender;
+  const { render, getPath, loadFollowers } = window.RekheeRender;
 
   const store = {
     get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } },
@@ -19,6 +19,7 @@
   let savedJSON = '';     // 마지막으로 저장/불러온 상태
   let sha = null;         // GitHub 파일 sha
   let editing = false;
+  let live = null;        // 치지직 자동 값 (followers.json)
 
   const TEMPLATES = {
     'hero.pills': () => '✨ 새 태그',
@@ -27,6 +28,17 @@
     'traits.items': () => ({ emoji: '✨', title: '새 특이사항', desc: '설명을 입력하세요' }),
     'achievements.items': () => ({ title: '새 해금 목표', meta: '🔒 다음 목표', desc: '설명을 입력하세요', condition: '해금 조건: ', status: '잠김', unlocked: false })
   };
+
+  // 예전 형식의 content.json 에 새 항목 기본값 채우기
+  function normalize(d) {
+    d.followers = Object.assign({ count: 0, auto: false, channelId: '', source: '' }, d.followers);
+    d.display = Object.assign({ showLocked: true, showSecret: true }, d.display);
+    return d;
+  }
+  async function refreshLive() {
+    live = await loadFollowers(data);
+    if (data) draw();
+  }
 
   // ---------- 유틸 ----------
   let toastTimer;
@@ -62,7 +74,7 @@
 
   // ---------- 화면 ----------
   function draw() {
-    render(app, data, { editing });
+    render(app, data, { editing, live });
     updateDirty();
   }
   function updateDirty() {
@@ -90,6 +102,36 @@
     setPath(data, el.dataset.path, el.innerHTML.replace(/&nbsp;/g, ' ').trim());
     changed();
   });
+  // 설정 패널/숫자 입력칸 (data-field + data-type)
+  function readField(el) {
+    const t = el.dataset.type;
+    if (t === 'bool') return el.checked;
+    if (t === 'num') return el.value === '' ? undefined : Math.max(0, Math.round(Number(el.value) || 0));
+    return el.value.trim();
+  }
+  function applyField(el) {
+    const path = el.dataset.field;
+    const v = readField(el);
+    if (v === undefined) {
+      const keys = path.split('.'); const last = keys.pop();
+      delete getPath(data, keys.join('.'))[last];
+    } else setPath(data, path, v);
+  }
+  app.addEventListener('input', e => {
+    const el = e.target.closest('[data-field]');
+    if (!el || el.type === 'checkbox') return;
+    applyField(el);   // 입력 중에는 다시 그리지 않음(커서 유지)
+    changed();
+  });
+  app.addEventListener('change', e => {
+    const el = e.target.closest('[data-field]');
+    if (!el) return;
+    applyField(el);
+    changed();
+    if (el.dataset.field === 'followers.auto' && el.checked) refreshLive();
+    else draw();      // 진행 바·숨김 표시 등을 바로 반영
+  });
+
   // 붙여넣기는 서식 없이 글자만
   app.addEventListener('paste', e => {
     if (!e.target.closest('[data-path]')) return;
@@ -231,17 +273,18 @@
       if (!r.ok) throw new Error('content.json을 불러올 수 없어요');
       loaded = await r.json();
     }
-    data = loaded;
+    data = normalize(loaded);
     savedJSON = json();
 
     const draft = store.get(DRAFT_KEY);
     if (draft && JSON.stringify(JSON.parse(draft), null, 2) + '\n' !== savedJSON &&
         confirm('저장하지 않은 편집 내용이 이 브라우저에 남아 있어요. 이어서 편집할까요?\n(취소를 누르면 임시 내용은 지워져요)')) {
-      data = JSON.parse(draft);
+      data = normalize(JSON.parse(draft));
     } else {
       store.del(DRAFT_KEY);
     }
     draw();
+    refreshLive();
   }
 
   async function save() {
