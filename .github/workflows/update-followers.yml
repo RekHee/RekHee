@@ -1,0 +1,38 @@
+name: 치지직 후궁 수 갱신
+
+on:
+  schedule:
+    - cron: '*/30 * * * *'   # 30분마다 (GitHub 사정에 따라 조금 늦게 돌 수 있음)
+  workflow_dispatch:          # Actions 탭에서 'Run workflow'로 바로 실행 가능
+
+permissions:
+  contents: write
+
+concurrency:
+  group: update-followers
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: 치지직에서 후궁 수 가져오기
+        run: node .github/scripts/update-followers.mjs
+
+      - name: 바뀌었으면 커밋
+        run: |
+          if [ -z "$(git status --porcelain -- followers.json)" ]; then
+            echo "변경 없음"; exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add followers.json
+          git commit -m "치지직 후궁 수 자동 갱신"
+          git pull --rebase origin "${GITHUB_REF_NAME}"   # 그 사이 관리자 페이지 저장이 있었어도 안전하게
+          git push

@@ -2,8 +2,8 @@
   "brand": "♛ REKHEE KINGDOM · CHARACTER GUIDE",
   "followers": {
     "count": 135,
-    "auto": false,
-    "channelId": "",
+    "auto": true,
+    "channelId": "a1e8e5f23eb6c276146ef112a81337ff",
     "source": "https://raw.githubusercontent.com/RekHee/RekHee/main/followers.json"
   },
   "display": {
