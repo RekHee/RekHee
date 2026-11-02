@@ -85,6 +85,18 @@ button{font:inherit;cursor:pointer}
 .edit-note{display:none;background:#fff9dc;border:1px solid #f2d98a;border-radius:12px;padding:10px 14px;margin:0 0 14px;font-size:.9rem}
 body.editing .edit-note{display:block}
 
+/* 관리자 잠금 화면 */
+.gate{display:none;min-height:100vh;place-items:center;padding:24px 16px}
+body.locked .gate{display:grid}
+body.locked .admin-bar,body.locked .page{display:none}
+.gate-card{width:100%;max-width:380px;background:var(--paper);border:1px solid var(--line);border-radius:24px;padding:30px 24px;text-align:center;box-shadow:0 7px 0 #f3c6dd}
+.gate-icon{font-size:2.4rem}
+.gate-card h1{margin:4px 0 6px;font-size:1.4rem}
+.gate-card input{width:100%;margin:18px 0 12px;padding:11px 13px;border:1px solid var(--line);border-radius:12px;font:inherit;background:white}
+.gate-card .btn{width:100%}
+.gate-link{margin-top:12px;border:0;background:none;color:var(--muted);font-size:.82rem;text-decoration:underline}
+.gate-msg{min-height:1.2em;margin:10px 0 0;font-size:.85rem;font-weight:700;color:#b3261e}
+
 .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(20px);background:var(--deep);color:white;padding:12px 18px;border-radius:14px;font-weight:700;font-size:.92rem;opacity:0;pointer-events:none;transition:.25s;z-index:100;max-width:calc(100% - 32px);text-align:center}
 .toast.show{opacity:1;transform:translateX(-50%)}
 .toast.err{background:#b3261e}

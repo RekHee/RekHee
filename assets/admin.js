@@ -142,7 +142,7 @@
     }));
   }
   function ghError(status) {
-    if (status === 401) return '토큰이 올바르지 않거나 만료됐어요. ⚙️ 설정을 확인해주세요.';
+    if (status === 401) return '토큰이 올바르지 않거나 만료됐어요.';
     if (status === 403) return '토큰에 쓰기 권한이 없어요. (Contents: Read and write 필요)';
     if (status === 404) return '저장소/브랜치/파일 경로를 찾을 수 없어요. ⚙️ 설정을 확인해주세요.';
     if (status === 409 || status === 422) return '다른 곳에서 먼저 수정됐어요. 새로고침 후 다시 시도해주세요.';
@@ -156,14 +156,76 @@
     return { sha: j.sha, text: b64decode(j.content) };
   }
 
+  // ---------- 잠금(관리자 확인) ----------
+  // 토큰으로 저장소 쓰기 권한이 있는지 확인. 실패하면 에러를 던진다.
+  async function verify(c) {
+    if (!c.token) throw new Error('토큰을 입력해주세요.');
+    const prev = cfg;
+    cfg = c;
+    try {
+      const r = await gh(apiBase());
+      if (!r.ok) throw new Error(ghError(r.status));
+      const repo = await r.json();
+      if (!repo.permissions || !repo.permissions.push) throw new Error(ghError(403));
+    } catch (e) {
+      cfg = prev;
+      throw e;
+    }
+  }
+  function lock(msg) {
+    document.body.classList.add('locked');
+    if (editing) setEditing(false);
+    data = null;
+    app.innerHTML = '';
+    $('gateMsg').textContent = msg || '';
+    $('gateToken').value = '';
+    $('gateToken').focus();
+  }
+  async function unlock() {
+    document.body.classList.remove('locked');
+    $('gateMsg').textContent = '';
+    app.innerHTML = '<p class="loading">불러오는 중…</p>';
+    await load();
+  }
+  async function init() {
+    if (!cfg.token) return lock();
+    try {
+      await verify(cfg);
+      await unlock();
+    } catch (e) {
+      lock(e.message);
+    }
+  }
+  $('gateForm').addEventListener('submit', async e => {
+    e.preventDefault();
+    const btn = $('gateBtn');
+    btn.disabled = true; btn.textContent = '확인 중…';
+    $('gateMsg').textContent = '';
+    try {
+      const next = Object.assign({}, cfg, { token: $('gateToken').value.trim() });
+      await verify(next);
+      store.set(CFG_KEY, JSON.stringify(cfg));
+      await unlock();
+      toast('어서 오시오, 관리자여! 👑');
+    } catch (err) {
+      $('gateMsg').textContent = err.message;
+    } finally {
+      btn.disabled = false; btn.textContent = '입장하기';
+    }
+  });
+  $('gateSettings').onclick = () => openSettings();
+  $('logoutBtn').onclick = () => {
+    if (isDirty() && !confirm('저장하지 않은 변경사항이 있어요. 그래도 로그아웃할까요?')) return;
+    cfg = Object.assign({}, cfg, { token: '' });
+    store.set(CFG_KEY, JSON.stringify(cfg));
+    store.del(DRAFT_KEY);
+    lock('로그아웃했어요.');
+  };
+
   async function load() {
     let loaded = null;
-    if (cfg.token) {
-      try {
-        const f = await ghGetFile();
-        if (f) { sha = f.sha; loaded = JSON.parse(f.text); }
-      } catch (e) { toast('GitHub에서 불러오기 실패: ' + e.message + ' (배포된 파일로 대신 불러와요)', true); }
-    }
+    const f = await ghGetFile();
+    if (f) { sha = f.sha; loaded = JSON.parse(f.text); }
     if (!loaded) {
       const r = await fetch('content.json?t=' + Date.now(), { cache: 'no-store' });
       if (!r.ok) throw new Error('content.json을 불러올 수 없어요');
@@ -184,11 +246,7 @@
 
   async function save() {
     if (editing && document.activeElement && document.activeElement.blur) document.activeElement.blur();
-    if (!cfg.token) {
-      toast('처음 한 번만 GitHub 토큰을 설정해주세요 🙏');
-      openSettings();
-      return;
-    }
+    if (!data || document.body.classList.contains('locked')) return;
     if (!isDirty() && sha) { toast('바뀐 내용이 없어요'); return; }
     const btn = $('saveBtn');
     btn.disabled = true;
@@ -202,6 +260,7 @@
       };
       if (sha) body.sha = sha;
       const r = await gh(contentsUrl(), { method: 'PUT', body: JSON.stringify(body), headers: { 'Content-Type': 'application/json' } });
+      if (r.status === 401) { lock(ghError(401)); return; }
       if (!r.ok) throw new Error(ghError(r.status));
       const j = await r.json();
       sha = j.content.sha;
@@ -231,21 +290,20 @@
     for (const k of Object.keys(DEFAULT_CFG)) next[k] = form.elements[k].value.trim();
     const ok = $('settingsOk');
     ok.disabled = true; ok.textContent = '확인 중…';
-    const prev = cfg;
-    cfg = next;
     try {
-      const r = await gh(apiBase());
-      if (!r.ok) throw new Error(ghError(r.status));
-      const repo = await r.json();
-      if (next.token && repo.permissions && !repo.permissions.push) throw new Error(ghError(403));
+      await verify(next);
       store.set(CFG_KEY, JSON.stringify(cfg));
-      sha = null;
-      const f = await ghGetFile().catch(() => null);
-      if (f) sha = f.sha;
       dlg.close();
-      toast('GitHub 연결 완료! 이제 저장할 수 있어요 👑');
+      if (isDirty()) {
+        // 편집 중이던 내용은 유지하고, 새 저장소의 sha만 다시 받아온다
+        sha = null;
+        const f = await ghGetFile().catch(() => null);
+        if (f) sha = f.sha;
+      } else {
+        await unlock();
+      }
+      toast('GitHub 연결 완료! 👑');
     } catch (err) {
-      cfg = prev;
       toast('연결 실패: ' + err.message, true);
     } finally {
       ok.disabled = false; ok.textContent = '연결 확인 후 저장';
@@ -278,5 +336,5 @@
     if (isDirty()) { e.preventDefault(); e.returnValue = ''; }
   });
 
-  load().catch(e => { app.innerHTML = `<p class="loading">${e.message}</p>`; });
+  init().catch(e => { app.innerHTML = `<p class="loading">${e.message}</p>`; });
 })();

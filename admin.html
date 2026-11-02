@@ -7,7 +7,19 @@
 <title>관리자 | 렉희 왕국</title>
 <link rel="stylesheet" href="assets/style.css">
 </head>
-<body>
+<body class="locked">
+<div class="gate" id="gate">
+  <form class="gate-card" id="gateForm">
+    <div class="gate-icon">🔐</div>
+    <h1>관리자 확인</h1>
+    <p class="sub">이 페이지는 관리자만 사용할 수 있어요.<br>GitHub 토큰을 입력해주세요.</p>
+    <input id="gateToken" type="password" autocomplete="off" placeholder="ghp_... 또는 github_pat_..." required>
+    <button class="btn primary" id="gateBtn">입장하기</button>
+    <button type="button" class="gate-link" id="gateSettings">저장소 설정 바꾸기</button>
+    <p class="gate-msg" id="gateMsg"></p>
+  </form>
+</div>
+
 <div class="admin-bar">
   <div class="admin-bar-inner">
     <div class="admin-title">🛠️ 관리자 페이지 <span class="dirty" id="dirty">저장됨</span></div>
@@ -19,6 +31,7 @@
       <button class="btn" id="printBtn">🖨️</button>
       <button class="btn" id="settingsBtn" title="GitHub 연결 설정">⚙️</button>
       <a class="btn" href="./" target="_blank" rel="noopener">👀 사용자 페이지</a>
+      <button class="btn" id="logoutBtn" title="이 브라우저에서 토큰 지우기">🚪 로그아웃</button>
     </div>
   </div>
 </div>
