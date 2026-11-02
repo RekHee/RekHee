@@ -14,19 +14,22 @@
   }
 
   // 치지직 자동 값(followers.json) 불러오기. GitHub Actions가 주기적으로 갱신한다.
+  // raw.githubusercontent(최대 5분 캐시)와 이 사이트의 followers.json(배포 후 갱신)을 동시에 읽고
+  // 갱신 시각(updatedAt)이 더 최근인 값을 쓴다. 한쪽이 실패해도 다른 쪽 값을 쓴다.
   async function loadFollowers(d) {
     const f = d.followers || {};
     if (!f.auto) return null;
     const urls = [f.source, 'followers.json'].filter(Boolean);
-    for (const u of urls) {
+    const results = await Promise.all(urls.map(async u => {
       try {
         const r = await fetch(u + (u.includes('?') ? '&' : '?') + 't=' + Date.now(), { cache: 'no-store' });
-        if (!r.ok) continue;
+        if (!r.ok) return null;
         const j = await r.json();
-        if (typeof j.count === 'number') return j;
-      } catch (e) { /* 다음 주소 시도 */ }
-    }
-    return null;
+        return typeof j.count === 'number' ? j : null;
+      } catch (e) { return null; }
+    }));
+    const time = j => Date.parse(j.updatedAt) || 0;
+    return results.filter(Boolean).sort((a, b) => time(b) - time(a))[0] || null;
   }
 
   function render(root, d, opt) {
