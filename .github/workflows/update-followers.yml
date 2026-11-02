@@ -22,8 +22,11 @@ jobs:
         with:
           node-version: 20
 
-      - name: 치지직에서 후궁 수 가져오기
+      - name: 치지직에서 후궁 수 가져오기 (공식 Open API)
         run: node .github/scripts/update-followers.mjs
+        env:
+          CHZZK_CLIENT_ID: ${{ secrets.CHZZK_CLIENT_ID }}
+          CHZZK_CLIENT_SECRET: ${{ secrets.CHZZK_CLIENT_SECRET }}
 
       - name: 바뀌었으면 커밋
         run: |
